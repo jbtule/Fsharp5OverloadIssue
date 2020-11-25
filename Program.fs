@@ -3,21 +3,22 @@
 open System
 
 type OverloadMeths =
-    static member ToOption(x) = x |> Option.ofNullable
-    static member ToOption(x) = x |> Option.ofObj
-    static member ToOption(x: 'T option) = x
+    static member Map(m: 'T option, f) = Option.map f m
+    static member Map(m: 'T when 'T:null, f) = m |> Option.ofObj |> Option.map f
+    //works in 5.0 if you comment out this line
+    static member Map(m: 'T Nullable, f) = m |> Option.ofNullable |> Option.map f
 
 type OptionBuilder() =
       member __.Zero() = None
-
       member __.Return(x: 'T) = Some x
-
-      member __.Bind(m: 'T option, f) = Option.bind f m
-      member __.Bind(m: 'T Nullable, f) = m |> Option.ofNullable |> Option.bind f
-      member __.Bind(m: 'T when 'T:null, f) = m |> Option.ofObj |> Option.bind f
-
       member __.Delay(f: unit -> _) = f
       member __.Run(f) = f()
+
+      member __.Bind(m: 'T option, f) = Option.bind f m
+      member __.Bind(m: 'T when 'T:null, f) = m |> Option.ofObj |> Option.bind f
+      //works in 5.0 if you comment out this line
+      member __.Bind(m: 'T Nullable, f) = m |> Option.ofNullable |> Option.bind f
+
 
 let option = OptionBuilder()
 
@@ -30,9 +31,8 @@ type Node (child:Node)=
 let main argv =
 
     let parent = Node()
-    let a1 = parent.child |> OverloadMeths.ToOption
-    let b1 = a1 |> Option.bind (fun x -> x.child |> OverloadMeths.ToOption)
-    let c1 = b1 |> Option.bind (fun x -> x.child |> OverloadMeths.ToOption)
+    let b1 = OverloadMeths.Map(parent.child, fun x -> x.child)
+    let c1 = OverloadMeths.Map(b1, fun x -> x.child)
 
     printfn "c1=%A" c1
 
