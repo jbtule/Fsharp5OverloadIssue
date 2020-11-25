@@ -37,12 +37,19 @@ let main argv =
     printfn "c1=%A" c1
 
     let parent = Node()
-    let d2 =
+
+    let s2  = option {
+         let! a2 = parent.child
+         return a2
+    }
+    printfn "s2=%A" s2
+
+    let d3 =
         option {
-            let! a2 = parent.child
-            let! b2 = a2.child
-            let! c2 = b2.child
-            return c2
+            let! a3 = parent.child
+            let! b3 = a3.child
+            let! c3 = b3.child
+            return c3
         } 
-    printfn "d2=%A" d2
+    printfn "d3=%A" d3
     0 // return an integer exit code
